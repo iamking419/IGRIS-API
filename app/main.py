@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.security import HTTPBearer
-from .routes import auth, chat, health , sessions,pair,bot_chat,bot
+from .routes import auth, chat, health , sessions,pair,bot_chat
 from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI(title="IGRIS API")
 
@@ -14,7 +14,6 @@ app.add_middleware(
 
 
 app.include_router(health.router)
-app.include_router(bot.router)
 app.include_router(bot_chat.router)
 app.include_router(chat.router)
 app.include_router(pair.router)
