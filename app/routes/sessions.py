@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from ..core.security import get_current_user
 
 from ..db import SessionLocal
 from .. import models, schemas
@@ -18,12 +19,14 @@ def get_db():
 
 # ---------------- CREATE SESSION ----------------
 @router.post("/sessions", response_model=schemas.ChatSessionOut)
-def create_session(payload: schemas.ChatSessionCreate, db: Session = Depends(get_db)):
-
-    user_id = 1  # TEMP (JWT later)
+def create_session(
+    payload: schemas.ChatSessionCreate,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
 
     session = models.ChatSession(
-        user_id=user_id,
+        user_id=current_user.id,
         title=payload.title
     )
 
@@ -36,23 +39,42 @@ def create_session(payload: schemas.ChatSessionCreate, db: Session = Depends(get
 
 # ---------------- GET ALL SESSIONS ----------------
 @router.get("/sessions", response_model=list[schemas.ChatSessionOut])
-def get_sessions(db: Session = Depends(get_db)):
-
-    user_id = 1  # TEMP
+def get_sessions(
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
 
     sessions = db.query(models.ChatSession).filter(
-        models.ChatSession.user_id == user_id
+        models.ChatSession.user_id == current_user.id
     ).order_by(models.ChatSession.id.desc()).all()
 
     return sessions
 
 
 # ---------------- UPDATE SESSION TITLE ----------------
+@router.get("/sessions", response_model=list[schemas.ChatSessionOut])
+def get_sessions(
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+
+    sessions = db.query(models.ChatSession).filter(
+        models.ChatSession.user_id == current_user.id
+    ).order_by(models.ChatSession.id.desc()).all()
+
+    return session
+# ---------------- RENAME SESSION TITLE ----------------
 @router.patch("/sessions/{session_id}")
-def rename_session(session_id: int, payload: schemas.ChatSessionCreate, db: Session = Depends(get_db)):
+def rename_session(
+    session_id: int,
+    payload: schemas.ChatSessionCreate,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
 
     session = db.query(models.ChatSession).filter(
-        models.ChatSession.id == session_id
+        models.ChatSession.id == session_id,
+        models.ChatSession.user_id == current_user.id
     ).first()
 
     if not session:
@@ -63,13 +85,17 @@ def rename_session(session_id: int, payload: schemas.ChatSessionCreate, db: Sess
 
     return {"message": "renamed"}
 
-
 # ---------------- DELETE SESSION ----------------
 @router.delete("/sessions/{session_id}")
-def delete_session(session_id: int, db: Session = Depends(get_db)):
+def delete_session(
+    session_id: int,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
 
     session = db.query(models.ChatSession).filter(
-        models.ChatSession.id == session_id
+        models.ChatSession.id == session_id,
+        models.ChatSession.user_id == current_user.id
     ).first()
 
     if not session:
