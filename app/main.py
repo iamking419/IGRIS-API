@@ -4,6 +4,8 @@ from .routes import auth, chat, health , sessions,pair
 from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI(title="IGRIS API")
 
+Base.metadata.create_all(bind=engine)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], # Or specify your Development App URL
