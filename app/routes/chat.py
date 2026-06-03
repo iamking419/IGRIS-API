@@ -28,7 +28,7 @@ def get_db():
 
 
 # ---------------- INIT DB TABLES ----------------
-models.Base.metadata.create_all(bind=engine)
+#models.Base.metadata.create_all(bind=engine)
 
 
 # ---------------- CHAT ENDPOINT ----------------
