@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI(title="IGRIS API")
 
 
-models.Base.metadata.create_all(bind=engine)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], # Or specify your Development App URL
@@ -25,7 +25,12 @@ app.include_router(sessions.router)
 app.include_router(auth.router, prefix="/auth")
 
 
-
+@app.on_event("startup")
+def startup():
+    try:
+        models.Base.metadata.create_all(bind=engine)
+    except Exception as e:
+        print("DB INIT FAILED:", e)
 
 @app.get("/")
 def home():
