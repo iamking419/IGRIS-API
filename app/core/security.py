@@ -27,7 +27,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 
 # ---------------- JWT SYSTEM ----------------
-def create_access_token(data: dict, expires_minutes: int = 60) -> str:
+def create_access_token(data: dict, expires_minutes: int = 2880) -> str:
     """
     Create JWT access token with expiration.
     """
