@@ -21,6 +21,8 @@ class ChatRequest(BaseModel):
     user_id: int | None = None
 
 
+
+
 class ChatRequest(BaseModel):
     message: str
     session_id: Optional[int] = None

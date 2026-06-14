@@ -9,6 +9,9 @@ from ..core.security import (
     create_access_token
 )
 
+# 👇 Google OAuth logic
+from ..auth import authenticate_google_user
+
 router = APIRouter()
 
 
@@ -21,18 +24,18 @@ def get_db():
         db.close()
 
 
-# ---------------- REGISTER ----------------
+# =========================
+# REGISTER
+# =========================
 @router.post("/register")
 def register(
     user: schemas.UserCreate,
     db: Session = Depends(get_db)
 ):
 
-    existing = (
-        db.query(models.User)
-        .filter(models.User.email == user.email)
-        .first()
-    )
+    existing = db.query(models.User).filter(
+        models.User.email == user.email
+    ).first()
 
     if existing:
         raise HTTPException(
@@ -40,7 +43,6 @@ def register(
             detail="User exists"
         )
 
-    # 👑 ADMIN AUTO ASSIGN
     role = "admin" if user.email == "michaelkm555@gmail.com" else "user"
 
     new_user = models.User(
@@ -60,18 +62,18 @@ def register(
     }
 
 
-# ---------------- LOGIN ----------------
+# =========================
+# LOGIN
+# =========================
 @router.post("/login")
 def login(
     user: schemas.UserLogin,
     db: Session = Depends(get_db)
 ):
 
-    db_user = (
-        db.query(models.User)
-        .filter(models.User.email == user.email)
-        .first()
-    )
+    db_user = db.query(models.User).filter(
+        models.User.email == user.email
+    ).first()
 
     if not db_user or not verify_password(
         user.password,
@@ -82,13 +84,10 @@ def login(
             detail="Invalid credentials"
         )
 
-    # 🔐 JWT WITH ROLE
-    token = create_access_token(
-        {
-            "user_id": db_user.id,
-            "role": db_user.role
-        }
-    )
+    token = create_access_token({
+        "user_id": db_user.id,
+        "role": db_user.role
+    })
 
     return {
         "access_token": token,
@@ -98,5 +97,44 @@ def login(
             "username": db_user.username,
             "email": db_user.email,
             "role": db_user.role
+        }
+    }
+
+
+# =========================
+# GOOGLE LOGIN (FIXED)
+# =========================
+class GoogleAuthRequest(schemas.BaseModel):
+    token: str
+
+
+@router.post("/google")
+def google_login(
+    data: GoogleAuthRequest,
+    db: Session = Depends(get_db)
+):
+
+    if not data.token:
+        raise HTTPException(
+            status_code=400,
+            detail="Missing Google token"
+        )
+
+    # 👇 verify + create/fetch user
+    user = authenticate_google_user(db, data.token)
+
+    token = create_access_token({
+        "user_id": user.id,
+        "role": getattr(user, "role", "user")
+    })
+
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user": {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "role": getattr(user, "role", "user")
         }
     }

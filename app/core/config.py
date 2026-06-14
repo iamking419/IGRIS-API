@@ -19,3 +19,8 @@ BOT_SECRET_TOKEN = os.getenv(
     "BOT_SECRET_TOKEN",
     "igris_bot_9f83k2kls9x_ishim"
 )
+
+GOOGLE_CLIENT_ID = os.getenv(
+    "GOOGLE_CLIENT_ID",
+    "736442979434-025v4c5m7nkch91rok9jprsuegk9i48m.apps.googleusercontent.com"
+    )

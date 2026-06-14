@@ -17,9 +17,8 @@ app.add_middleware(
 )
 
 
-app.include_router(health.router)
+
 app.include_router(chat.router)
-app.include_router(pair.router)
 app.include_router(sessions.router)
 
 app.include_router(auth.router, prefix="/auth")
